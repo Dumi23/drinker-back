@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.backends import TokenBackend
 from .models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, GoogleSocialAuthSerializer
 from django.urls import reverse
 from .utils import Util
 from rest_framework.response import Response
@@ -73,6 +73,20 @@ class Login(APIView):
         response.set_cookie(key='refresh', value=refresh, httponly=True)
 
         return response
+
+
+class Google(APIView):
+    serializer_class = GoogleSocialAuthSerializer
+    def post(self, request):
+        """
+        POST with "auth_token"
+        Send an idtoken as from google to get user information
+        """
+        serializer = self.serializer_class(context={'request': request},data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = ((serializer.validated_data)['auth_token'])
+        return Response(data, status=status.HTTP_200_OK)    
+
 
 class Logout(APIView):
     quersey = User.objects.all()
