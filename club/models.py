@@ -1,5 +1,5 @@
 from django.db import models
-
+from user.models import User
 # Create your models here.
 class Type(models.Model):
     name = models.CharField(max_length=255)
@@ -30,6 +30,7 @@ class Location(models.Model):
 
 class Place(models.Model):
     name = models.CharField(max_length=255)
+    owner = models.ForeignKey(User, related_name='owner_place', on_delete=models.DO_NOTHING, null=True)
     description = models.CharField(max_length=255)
     image = models.ImageField(storage='place_profile_pics')
     is_active = models.BooleanField(default=False)
@@ -37,6 +38,7 @@ class Place(models.Model):
     location = models.ForeignKey(Location, related_name='place_location', on_delete=models.DO_NOTHING)
     type = models.ForeignKey(Type, related_name='place_type', on_delete=models.DO_NOTHING)
     events = models.ManyToManyField(Event)
+    upcoming_live_event = models.ForeignKey(Event, related_name='live_event', on_delete=models.DO_NOTHING, null=True)
 
 class Socials(models.Model):
     id = models.OneToOneField(Place, on_delete=models.CASCADE, primary_key=True)
