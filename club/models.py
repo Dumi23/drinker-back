@@ -1,5 +1,6 @@
 from django.db import models
 from user.models import User
+from drinker.utils import get_hashid
 # Create your models here.
 class Type(models.Model):
     name = models.CharField(max_length=255)
@@ -8,10 +9,15 @@ class Drink(models.Model):
     name = models.CharField(max_length=555, primary_key=True)
 
 class Music(models.Model):
-    genre = models.CharField(max_length=255, primary_key=True)
+    genre = models.CharField(max_length=255)
+    slug = models.CharField(max_length=255, unique=True, null=True, blank=True, editable=False)
 
     def __str__(self) -> str:
         return self.genre
+
+    def save(self, *args, **kwargs):
+        get_hashid(self, Type=Music, *args, **kwargs)
+        
 
 class Event(models.Model):
     name = models.CharField(max_length=255)
