@@ -6,11 +6,12 @@ from . import google
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'password', 'first_name', 'last_name']
+        fields = ['username', 'email', 'first_name', 'password', 'first_name', 'last_name', 'type']
         extra_kwargs = {
             'password': {'write_only': True},
             'first_name': {'required': True, 'allow_blank': False},
-            'last_name': {'required': True,'allow_blank': False}
+            'last_name': {'required': True,'allow_blank': False},
+            'type': {'write_only': True},
         }
 
     def create(self, validated_data):
@@ -18,6 +19,8 @@ class UserSerializer(serializers.ModelSerializer):
         instance = self.Meta.model(**validated_data)
         if password is not None:
             instance.set_password(password)
+        type = validated_data['type']
+        instance.type = type
         instance.save()
         return instance
 

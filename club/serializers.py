@@ -56,7 +56,16 @@ class PlaceSerializer(serializers.ModelSerializer):
     is_validated = serializers.BooleanField(read_only=True)
     events = EventSerializer(read_only=True, many=True)
     upcoming_live_event = EventSerializer(read_only=True)
+    music = MusicSerializer(read_only=True, many=True)
     class Meta:
         model = Place
-        fields = ['name', 'description', 'is_active', 'is_validated', 'location', 'type', 'events', 'upcoming_live_event', 'image']
+        fields = ['name', 'description', 'is_active', 'is_validated', 'location', 'type', 'events', 'upcoming_live_event', 'image', 'music']
+        extra_kwargs = {
+            'name': {'required': True},
+            'description': {'required': True},
+        }
 
+        def create(self, validated_data):
+            instance = Place(**validated_data)
+            instance.save()
+            return instance
