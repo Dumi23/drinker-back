@@ -3,6 +3,7 @@ cachetools==5.2.1
 certifi==2022.12.7
 charset-normalizer==2.1.1
 Django==4.1.5
+django-filter==22.1
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.2.2
 google-api-core==2.11.0

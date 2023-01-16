@@ -11,10 +11,10 @@ class DrinkSerializer(serializers.Serializer):
         model = Drink
         fields = ['name']
 
-class MusicSerializer(serializers.Serializer):
+class MusicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Music
-        fields = ['genre']
+        fields = ['genre', 'slug']
 
 class EventSerializer(serializers.Serializer):
     class Meta:
@@ -51,6 +51,8 @@ class LocationSerializer(serializers.Serializer):
 class PlaceSerializer(serializers.Serializer):
     location = LocationSerializer(read_only=True)
     type = TypeSerializer(read_only=True)
+    is_active = serializers.BooleanField(read_only=True)
+    is_validated = serializers.BooleanField(read_only=True)
     events = EventSerializer(read_only=True, many=True)
     upcoming_live_event = EventSerializer(read_only=True)
     class Meta:

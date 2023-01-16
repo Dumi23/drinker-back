@@ -45,6 +45,7 @@ class Place(models.Model):
     type = models.ForeignKey(Type, related_name='place_type', on_delete=models.DO_NOTHING)
     events = models.ManyToManyField(Event)
     upcoming_live_event = models.ForeignKey(Event, related_name='live_event', on_delete=models.DO_NOTHING, null=True)
+    music = models.ManyToManyField(Music)
 
 class Socials(models.Model):
     id = models.OneToOneField(Place, on_delete=models.CASCADE, primary_key=True)
