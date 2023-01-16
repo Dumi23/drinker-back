@@ -1,12 +1,12 @@
 from rest_framework import serializers
 from .models import *
 
-class TypeSerializer(serializers.Serializer):
+class TypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Type
         fields = ['name']
 
-class DrinkSerializer(serializers.Serializer):
+class DrinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Drink
         fields = ['name']
@@ -16,7 +16,7 @@ class MusicSerializer(serializers.ModelSerializer):
         model = Music
         fields = ['genre', 'slug']
 
-class EventSerializer(serializers.Serializer):
+class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ['name', 'description', 'is_active', 'start_time']
@@ -33,7 +33,7 @@ class EventSerializer(serializers.Serializer):
             return instance
 
 
-class LocationSerializer(serializers.Serializer):
+class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = ['city_name', 'street_name', 'street_number']
@@ -48,7 +48,7 @@ class LocationSerializer(serializers.Serializer):
         instance.save()
         return instance
 
-class PlaceSerializer(serializers.Serializer):
+class PlaceSerializer(serializers.ModelSerializer):
     location = LocationSerializer(read_only=True)
     type = TypeSerializer(read_only=True)
     is_active = serializers.BooleanField(read_only=True)
