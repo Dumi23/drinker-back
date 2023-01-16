@@ -49,6 +49,7 @@ class LocationSerializer(serializers.ModelSerializer):
         return instance
 
 class PlaceSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField()
     location = LocationSerializer(read_only=True)
     type = TypeSerializer(read_only=True)
     is_active = serializers.BooleanField(read_only=True)
@@ -57,5 +58,5 @@ class PlaceSerializer(serializers.ModelSerializer):
     upcoming_live_event = EventSerializer(read_only=True)
     class Meta:
         model = Place
-        fields = ['name', 'description', 'is_active', 'is_validated', 'location', 'type', 'events', 'upcoming_live_event']
+        fields = ['name', 'description', 'is_active', 'is_validated', 'location', 'type', 'events', 'upcoming_live_event', 'image']
 
