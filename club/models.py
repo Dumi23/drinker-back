@@ -1,6 +1,7 @@
 from django.db import models
 from user.models import User
 from drinker.utils import get_hashid
+from phonenumber_field.modelfields import PhoneNumberField
 # Create your models here.
 class Type(models.Model):
     name = models.CharField(max_length=255)
@@ -28,11 +29,24 @@ class Event(models.Model):
     def __str__(self) -> str:
         return self.name
 
+
 class Location(models.Model):
+    name = models.CharField(max_length=255)
+    places = models.ManyToManyField('Place', related_name='location_places', blank=True)
+    slug = models.SlugField(max_length=255, unique=True, editable=False)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def save(self, *args, **kwargs):
+        get_hashid(self, Type=Location, *args, **kwargs)
+        
+
+class Address(models.Model):
     city_name = models.CharField(max_length=255)
     street_name = models.CharField(max_length=255)
     street_number = models.CharField(max_length=255)
-
+    phone_number = PhoneNumberField(blank=True)
 
 class Place(models.Model):
     name = models.CharField(max_length=255)
@@ -41,10 +55,11 @@ class Place(models.Model):
     image = models.ImageField(storage='place_profile_pics')
     is_active = models.BooleanField(default=False)
     is_validated = models.BooleanField(default=False)
-    location = models.ForeignKey(Location, related_name='place_location', on_delete=models.DO_NOTHING)
-    type = models.ForeignKey(Type, related_name='place_type', on_delete=models.DO_NOTHING)
+    location = models.ForeignKey(Location, related_name='place_location', on_delete=models.SET_NULL, null=True)
+    address = models.ForeignKey(Address, related_name='place_address', on_delete=models.SET_NULL, null=True)
+    type = models.ForeignKey(Type, related_name='place_type', on_delete=models.SET_NULL, null=True)
     events = models.ManyToManyField(Event)
-    upcoming_live_event = models.ForeignKey(Event, related_name='live_event', on_delete=models.DO_NOTHING, null=True)
+    upcoming_live_event = models.ForeignKey(Event, related_name='live_event', on_delete=models.SET_NULL, null=True)
     music = models.ManyToManyField(Music)
 
 class Socials(models.Model):

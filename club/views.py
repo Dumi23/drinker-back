@@ -8,7 +8,7 @@ from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import status
-from .serializers import PlaceSerializer, MusicSerializer
+from .serializers import PlaceSerializer, MusicSerializer, LocationSerializer
 from .models import *
 # Create your views here.
 
@@ -43,5 +43,14 @@ class GetMusic(ListAPIView):
     pagination_class = PageNumberPagination
     filter_backends = [SearchFilter, DjangoFilterBackend]
     search_fields = ['^genre']
+    def get_queryset(self):
+        return self.queryset.distinct()
+
+class GetLocations(ListAPIView):
+    queryset = Location.objects.all().order_by('-id').distinct()
+    serializer_class = LocationSerializer
+    pagination_class = PageNumberPagination
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+    search_fields = ['^name']
     def get_queryset(self):
         return self.queryset.distinct()
