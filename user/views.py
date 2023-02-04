@@ -1,8 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.backends import TokenBackend
 from .models import User
+from club.models import Location
 from .serializers import UserSerializer, GoogleSocialAuthSerializer
 from django.urls import reverse
 from .utils import Util
@@ -25,10 +26,11 @@ class EmailVerify(APIView):
         return Response("Email successfully verified.")    
 
 class Register(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+        location = get_object_or_404(Location.objects.all(), slug=request.data['location_slug'])
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(location=location)
         user = User.objects.latest('id')
         token = AccessToken.for_user(user)
         print(user.email)

@@ -50,8 +50,8 @@ class AddressSerializer(serializers.ModelSerializer):
         return instance
 
 class PlaceSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField()
-    location = serializers.SlugRelatedField(read_only=True, slug_field='location')
+    image = serializers.ImageField(read_only=True)
+    location = serializers.StringRelatedField(read_only=True)
     address = AddressSerializer(read_only=True)
     type = TypeSerializer(read_only=True)
     is_active = serializers.BooleanField(read_only=True)

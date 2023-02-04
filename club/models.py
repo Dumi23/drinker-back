@@ -5,6 +5,14 @@ from phonenumber_field.modelfields import PhoneNumberField
 # Create your models here.
 class Type(models.Model):
     name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, null=True, editable=False, unique=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def save(self, *args, **kwargs):
+        get_hashid(self, Type=Type, *args, **kwargs)
+        
 
 class Drink(models.Model):
     name = models.CharField(max_length=555, primary_key=True)
@@ -50,6 +58,7 @@ class Address(models.Model):
 
 class Place(models.Model):
     name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, editable=False, null=True)
     owner = models.ForeignKey(User, related_name='owner_place', on_delete=models.DO_NOTHING, null=True)
     description = models.CharField(max_length=255)
     image = models.ImageField(storage='place_profile_pics')
@@ -61,6 +70,12 @@ class Place(models.Model):
     events = models.ManyToManyField(Event)
     upcoming_live_event = models.ForeignKey(Event, related_name='live_event', on_delete=models.SET_NULL, null=True)
     music = models.ManyToManyField(Music)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def save(self, *args, **kwargs):
+        get_hashid(self, Type=Place, *args, **kwargs)
 
 class Socials(models.Model):
     id = models.OneToOneField(Place, on_delete=models.CASCADE, primary_key=True)

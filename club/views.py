@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,12 +20,13 @@ class CreatePlace(APIView):
             return Response({"message": "Your account type restricts you from making a place"})
         
         slug_music = request.data['slug_music']
-        serializer = MusicSerializer(data=request.data)
+        music_array = slug_music
+        print(music_array)
+        location = get_object_or_404(Location.objects.all(), slug=request.data['location_slug'])
+        serializer = PlaceSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save(owner=request.user)
-            serializer_dict = serializer.data
-            serializer_dict['message'] = "Place succesfully created. "
-            for i in slug_music:
+            instance = serializer.save(owner=request.user, location=location)            
+            for i in music_array:
                 try: 
                     music = Music.objects.get(slug=i)
                     instance = Place.objects.latest('-id')
@@ -33,9 +34,22 @@ class CreatePlace(APIView):
                     instance.save()
                 except Music.DoesNotExist:
                     pass
+            serializer_dict = serializer.data
+            location.places.add(instance)
+            serializer_dict['message'] = "Place succesfully created. "
             return Response(serializer_dict, status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+
+class UserFeed(ListAPIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = PlaceSerializer
+    pagination_class = PageNumberPagination
+    def get(self, request, *args, **kwargs):
+        queryset = Place.objects.filter(location=request.user.location,music__user=request.user).distinct()
+        return queryset.distinct
+        
 
 class GetMusic(ListAPIView):
     queryset = Music.objects.all().order_by('-id').distinct()
