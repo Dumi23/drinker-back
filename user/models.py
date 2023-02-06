@@ -21,6 +21,7 @@ class User(AbstractUser):
     password = models.CharField(max_length=500, validators= [MinLengthValidator(8)])
     type = models.IntegerField(choices=TYPE_CHOICES, null=True, default=0)
     email_verified = models.BooleanField(default=False)
+    music = models.ManyToManyField('club.Music', related_name='user_music')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

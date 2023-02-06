@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.backends import TokenBackend
 from .models import User
-from club.models import Location
+from club.models import Location, Music
 from .serializers import UserSerializer, GoogleSocialAuthSerializer
 from django.urls import reverse
 from .utils import Util
@@ -27,13 +27,19 @@ class EmailVerify(APIView):
 
 class Register(APIView):
     def post(self, request, *args, **kwargs):
+        music_slug = request.data['music_slug']
         location = get_object_or_404(Location.objects.all(), slug=request.data['location_slug'])
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(location=location)
         user = User.objects.latest('id')
         token = AccessToken.for_user(user)
-        print(user.email)
+        for i in music_slug:
+            try: 
+                music = Music.objects.get(slug=i)
+                user.music.add(music)
+            except Music.DoesNotExist:
+                pass
         relativeLink = reverse('email-verify', kwargs={'token': token})
         current_site = get_current_site(request=request).domain
         absurl = 'http://' + current_site + relativeLink

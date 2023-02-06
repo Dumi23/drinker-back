@@ -46,9 +46,16 @@ class UserFeed(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = PlaceSerializer
     pagination_class = PageNumberPagination
-    def get(self, request, *args, **kwargs):
-        queryset = Place.objects.filter(location=request.user.location,music__user=request.user).distinct()
-        return queryset.distinct
+    def get(self, request):
+        values = request.user.music.all().values('id')
+        value_list = []
+        for i in values:
+            value_list.append(i['id'])
+        print(value_list)
+        queryset = Place.objects.filter(location=request.user.location, music__in = value_list).distinct()  
+        paginate = self.paginate_queryset(queryset)
+        serializer = PlaceSerializer(paginate, many=True)
+        return self.get_paginated_response(serializer.data)
         
 
 class GetMusic(ListAPIView):

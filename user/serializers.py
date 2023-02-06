@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from club.serializers import LocationSerializer
+from club.serializers import LocationSerializer, MusicSerializer
 from club.models import Location
 from .models import User
 from .google_register import register_social_user
@@ -8,9 +8,10 @@ from . import google
 
 class UserSerializer(serializers.ModelSerializer):
     location = LocationSerializer(read_only=True)
+    music = MusicSerializer(read_only=True, many=True)
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'password', 'first_name', 'last_name', 'type', 'location']
+        fields = ['username', 'email', 'first_name', 'password', 'first_name', 'last_name', 'type', 'location', 'music']
         extra_kwargs = {
             'password': {'write_only': True},
             'first_name': {'required': True, 'allow_blank': False},
