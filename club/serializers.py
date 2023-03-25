@@ -17,13 +17,15 @@ class MusicSerializer(serializers.ModelSerializer):
         fields = ['genre', 'slug']
 
 class EventSerializer(serializers.ModelSerializer):
+    start_time = serializers.DateTimeField(format="%d-%m-%Y %H:%M")
     class Meta:
         model = Event
-        fields = ['name', 'description', 'is_active', 'start_time']
+        fields = ['name', 'description', 'image' ,'slug' ,'is_active', 'start_time']
         extra_kwargs = {
             'name': {'required': True},
             'description': {'required': True},
-            'start_time': {'required': True}
+            'start_time': {'required': True},
+            'slug': {'required': False},
         }
 
 
@@ -32,27 +34,9 @@ class EventSerializer(serializers.ModelSerializer):
             instance.save()
             return instance
 
-
-class AddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Address
-        fields = ['city_name', 'street_name', 'street_number', 'phone_number']
-        extra_kwargs = {
-            'city_name': {'required': True},
-            'street_name': {'required': True},
-            'stret_number': {'required': True},
-            'phone_number': {'required': True}
-        }
-
-    def create(self, validated_data):
-        instance = Address(**validated_data)
-        instance.save()
-        return instance
-
 class PlaceSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(read_only=True)
     location = serializers.StringRelatedField(read_only=True)
-    address = AddressSerializer(read_only=True)
     type = TypeSerializer(read_only=True)
     is_active = serializers.BooleanField(read_only=True)
     is_validated = serializers.BooleanField(read_only=True)
@@ -61,7 +45,7 @@ class PlaceSerializer(serializers.ModelSerializer):
     music = MusicSerializer(read_only=True, many=True)
     class Meta:
         model = Place
-        fields = ['name', 'description', 'is_active', 'is_validated', 'location' ,'address', 'type', 'events', 'upcoming_live_event', 'image', 'music']
+        fields = ['name', 'description', 'slug' ,'is_active', 'is_validated', 'location' , 'type', 'events', 'upcoming_live_event', 'image', 'music', 'street_name', 'phone_number']
         extra_kwargs = {
             'name': {'required': True},
             'description': {'required': True},

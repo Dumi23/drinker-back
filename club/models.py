@@ -31,11 +31,17 @@ class Music(models.Model):
 class Event(models.Model):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='event_pics', null=True)
     is_active = models.BooleanField(default=True)
+    slug = models.SlugField(max_length=255, unique=True, editable=False, blank=True, null=True)
     start_time = models.DateTimeField()
+    atendees = models.ManyToManyField(User, blank=True)
 
     def __str__(self) -> str:
         return self.name
+    
+    def save(self, *args, **kwargs):
+        get_hashid(self, Type=Event, *args, **kwargs)
 
 
 class Location(models.Model):
@@ -48,28 +54,22 @@ class Location(models.Model):
 
     def save(self, *args, **kwargs):
         get_hashid(self, Type=Location, *args, **kwargs)
-        
-
-class Address(models.Model):
-    city_name = models.CharField(max_length=255)
-    street_name = models.CharField(max_length=255)
-    street_number = models.CharField(max_length=255)
-    phone_number = PhoneNumberField(blank=True)
 
 class Place(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True, editable=False, null=True)
     owner = models.ForeignKey(User, related_name='owner_place', on_delete=models.DO_NOTHING, null=True)
     description = models.CharField(max_length=255)
-    image = models.ImageField(storage='place_profile_pics')
+    image = models.ImageField(upload_to='place_profile_pics/')
     is_active = models.BooleanField(default=False)
     is_validated = models.BooleanField(default=False)
     location = models.ForeignKey(Location, related_name='place_location', on_delete=models.SET_NULL, null=True)
-    address = models.ForeignKey(Address, related_name='place_address', on_delete=models.SET_NULL, null=True)
     type = models.ForeignKey(Type, related_name='place_type', on_delete=models.SET_NULL, null=True)
-    events = models.ManyToManyField(Event)
-    upcoming_live_event = models.ForeignKey(Event, related_name='live_event', on_delete=models.SET_NULL, null=True)
+    events = models.ManyToManyField(Event, blank=True)
+    upcoming_live_event = models.ForeignKey(Event, related_name='live_event', on_delete=models.SET_NULL, null=True, blank=True)
     music = models.ManyToManyField(Music)
+    street_name = models.CharField(max_length=255, null=True, blank=True)
+    phone_number = PhoneNumberField(blank=True, null=True)
 
     def __str__(self) -> str:
         return self.name

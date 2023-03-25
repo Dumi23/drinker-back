@@ -106,3 +106,12 @@ class Logout(APIView):
         response = Response({'message': 'Successful Logout'})
         response.set_cookie(key='refresh', value='', httponly=True)    
         return response  
+
+
+class Me(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status.HTTP_200_OK) 

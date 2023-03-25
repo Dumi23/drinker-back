@@ -7,16 +7,15 @@ from .google_register import register_social_user
 from . import google
 
 class UserSerializer(serializers.ModelSerializer):
-    location = LocationSerializer(read_only=True)
+    location = serializers.StringRelatedField(read_only=True)
     music = MusicSerializer(read_only=True, many=True)
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'password', 'first_name', 'last_name', 'type', 'location', 'music']
+        fields = ['username', 'email', 'first_name', 'password', 'first_name', 'last_name', 'type', 'location', 'music', 'type']
         extra_kwargs = {
             'password': {'write_only': True},
             'first_name': {'required': True, 'allow_blank': False},
             'last_name': {'required': True,'allow_blank': False},
-            'type': {'write_only': True},
         }
 
     def create(self, validated_data):
