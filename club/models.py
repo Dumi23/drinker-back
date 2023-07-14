@@ -70,6 +70,9 @@ class Place(models.Model):
     music = models.ManyToManyField(Music)
     street_name = models.CharField(max_length=255, null=True, blank=True)
     phone_number = PhoneNumberField(blank=True, null=True)
+    latitude = models.FloatField(null=True)
+    longitude = models.FloatField(null=True)
+    followers = models.ManyToManyField(User, blank=True)
 
     def __str__(self) -> str:
         return self.name

@@ -4,7 +4,7 @@ from .models import *
 class TypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Type
-        fields = ['name']
+        fields = ['name', 'slug']
 
 class DrinkSerializer(serializers.ModelSerializer):
     class Meta:
@@ -45,7 +45,7 @@ class PlaceSerializer(serializers.ModelSerializer):
     music = MusicSerializer(read_only=True, many=True)
     class Meta:
         model = Place
-        fields = ['name', 'description', 'slug' ,'is_active', 'is_validated', 'location' , 'type', 'events', 'upcoming_live_event', 'image', 'music', 'street_name', 'phone_number']
+        fields = ['name', 'description', 'slug' ,'is_active', 'latitude', 'longitude', 'street_name' ,'is_validated', 'location' , 'type', 'events', 'upcoming_live_event', 'image', 'music', 'street_name', 'phone_number']
         extra_kwargs = {
             'name': {'required': True},
             'description': {'required': True},

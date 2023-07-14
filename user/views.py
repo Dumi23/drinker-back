@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.backends import TokenBackend
 from .models import User
@@ -12,6 +13,9 @@ from django.contrib.sites.shortcuts import get_current_site
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from club.serializers import PlaceSerializer
+from club.models import Place
+
 # Create your views here.
 
 class EmailVerify(APIView):
@@ -28,10 +32,9 @@ class EmailVerify(APIView):
 class Register(APIView):
     def post(self, request, *args, **kwargs):
         music_slug = request.data['music_slug']
-        location = get_object_or_404(Location.objects.all(), slug=request.data['location_slug'])
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(location=location)
+        serializer.save()
         user = User.objects.latest('id')
         token = AccessToken.for_user(user)
         for i in music_slug:
@@ -108,10 +111,15 @@ class Logout(APIView):
         return response  
 
 
-class Me(APIView):
+class Me(ListAPIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request):
         user = request.user
         serializer = UserSerializer(user)
-        return Response(serializer.data, status.HTTP_200_OK) 
+        place_queryset = Place.objects.filter(owner=user).distinct()
+        paginate = self.paginate_queryset(place_queryset)
+        paginated_serializer = PlaceSerializer(paginate, many=True)
+        response = self.get_paginated_response(paginated_serializer.data)
+        response.data['user_data'] = serializer.data
+        return response

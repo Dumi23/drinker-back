@@ -7,29 +7,36 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.filters import SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
-from .serializers import PlaceSerializer, MusicSerializer, LocationSerializer, EventSerializer
+from .serializers import PlaceSerializer, MusicSerializer, LocationSerializer, EventSerializer, TypeSerializer
 from .models import *
 # Create your views here.
 
 class CreatePlace(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+    parser_classes = [FormParser, MultiPartParser]
     def post(self, request):
         if request.user.type != User.type_OWNER:
             return Response({"message": "Your account type restricts you from making a place"})
         
-        slug_music = request.data['slug_music']
-        music_array = slug_music
+        print(request.data)
+        slug_music = request.data['slug_music[]']
+        music_array = []
+        music_array.append(slug_music)
         print(music_array)
+        type = get_object_or_404(Type.objects.all(), slug=request.data['type'])
         location = get_object_or_404(Location.objects.all(), slug=request.data['location_slug'])
+        image = request.data['image[]']
         serializer = PlaceSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            instance = serializer.save(owner=request.user, location=location)            
+            instance = serializer.save(owner=request.user, location=location, type=type, image=image)            
             for i in music_array:
                 try: 
+                    print(i)
                     music = Music.objects.get(slug=i)
-                    instance = Place.objects.latest('-id')
+                    instance = Place.objects.latest('id')
                     instance.music.add(music)
                     instance.save()
                 except Music.DoesNotExist:
@@ -37,6 +44,7 @@ class CreatePlace(APIView):
             serializer_dict = serializer.data
             location.places.add(instance)
             serializer_dict['message'] = "Place succesfully created. "
+            print(serializer_dict)
             return Response(serializer_dict, status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
@@ -51,6 +59,15 @@ class EventDetails(APIView):
     def get(self, request, slug):
         event = get_object_or_404(Event.objects.all(), slug=slug)
         serializer = EventSerializer(event)
+        if request.user.is_authenticated() == True:
+            if event.atendees.filter(user=request.user).exists() == True:
+                serializer_dict = serializer.data
+                serializer_dict['attends_event'] = True
+                return Response(serializer.data, status.HTTP_200_OK)
+            else: 
+                serializer_dict = serializer.data
+                serializer_dict['attends_event'] = False   
+                return Response(serializer.data, status.HTTP_200_OK)         
         return Response(serializer.data, status.HTTP_200_OK)
         
 class UpdatePlace(APIView):
@@ -106,8 +123,6 @@ class UpdateEvent(APIView):
             return Response(serializer_dict, status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
-        
-
 
 class UnauthedUserFeed(ListAPIView):
     def get(self, request):
@@ -125,35 +140,43 @@ class UnauthedUserEventFeed(ListAPIView):
 
 
 class UserFeed(ListAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
     serializer_class = PlaceSerializer
     pagination_class = PageNumberPagination
     def get(self, request):
-        values = request.user.music.all().values('id')
-        value_list = []
-        for i in values:
-            value_list.append(i['id'])
-        print(value_list)
-        queryset = Place.objects.filter(location=request.user.location, music__in = value_list).distinct()  
-        paginate = self.paginate_queryset(queryset)
-        serializer = PlaceSerializer(paginate, many=True)
-        return self.get_paginated_response(serializer.data)
+        if request.user.is_authenticated == True:
+            values = request.user.music.all().values('id')
+            value_list = []
+            for i in values:
+                value_list.append(i['id'])
+            print(value_list)
+            queryset = Place.objects.filter(location=request.user.location, music__in = value_list).distinct()  
+            paginate = self.paginate_queryset(queryset)
+            serializer = PlaceSerializer(paginate, many=True)
+            return self.get_paginated_response(serializer.data)
+        else:
+            queryset = Place.objects.all()  
+            paginate = self.paginate_queryset(queryset)
+            serializer = PlaceSerializer(paginate, many=True)
+            return self.get_paginated_response(serializer.data)
         
 class UserEventFeed(ListAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
     serializer_class = PlaceSerializer
     pagination_class = PageNumberPagination
     def get(self, request):
-        values = request.user.music.all().values('id')
-        value_list = []
-        for i in values:
-            value_list.append(i['id'])
-        queryset = Place.objects.filter(location=request.user.location, music__in=value_list).distinct().values('events')
-        paginate = self.paginate_queryset(queryset)
-        serializer = EventSerializer(paginate, many=True)
-        return self.get_paginated_response(serializer.data)
+        if request.user.is_authenticated == True:
+            values = request.user.music.all().values('id')
+            value_list = []
+            for i in values:
+                value_list.append(i['id'])
+            queryset = Place.objects.filter(location=request.user.location, music__in=value_list).distinct()
+            paginate = self.paginate_queryset(queryset=queryset)
+            serializer = PlaceSerializer(paginate, many=True)
+            return self.get_paginated_response(serializer.data)
+        else:
+            queryset = Event.objects.all()
+            paginate = self.paginate_queryset(queryset)
+            serializer = EventSerializer(paginate, many=True)
+            return self.get_paginated_response(serializer.data)
 
 class GetMusic(ListAPIView):
     queryset = Music.objects.all().order_by('-id').distinct()
@@ -172,3 +195,30 @@ class GetLocations(ListAPIView):
     search_fields = ['^name']
     def get_queryset(self):
         return self.queryset.distinct()
+    
+class GetTypes(ListAPIView):
+    queryset = Type.objects.all().order_by('-id').distinct()
+    serializer_class = TypeSerializer
+    def get_queryset(self):
+        return self.queryset.distinct()
+    
+
+class AttendEvent(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request, slug):
+        event = get_object_or_404(Event.objects.all(), slug=slug)
+        event.atendees.add(request.user)
+        return Response({"message": "Will attend event"}, status.HTTP_200_OK)
+    
+class RemoveAttendanceForEvent(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request, slug):
+        event = get_object_or_404(Event.objects.all())
+        if event.atendees.filter(email=request.user.email).exists() == True:
+            event.atendees.remove(request.user)
+            return Response({"message": "Will not attend event anymore"}, status.HTTP_200_OK)
+        return Response({"message": "You have not marked this event for attendance"}, status.HTTP_400_BAD_REQUEST)
+    
+    

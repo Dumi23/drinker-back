@@ -22,6 +22,8 @@ class User(AbstractUser):
     type = models.IntegerField(choices=TYPE_CHOICES, null=True, default=0)
     email_verified = models.BooleanField(default=False)
     music = models.ManyToManyField('club.Music', related_name='user_music')
+    notifications_disabled = models.BooleanField(default=False)
+    notifications = models.ManyToManyField('notifications.Notification', blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
