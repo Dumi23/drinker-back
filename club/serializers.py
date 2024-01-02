@@ -1,5 +1,11 @@
 from rest_framework import serializers
 from .models import *
+import sys
+
+class AtendeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username']
 
 class TypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,9 +24,11 @@ class MusicSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     start_time = serializers.DateTimeField(format="%d-%m-%Y %H:%M")
+    atendees = AtendeeSerializer(many=True, read_only=False)
+    image = serializers.ImageField(use_url=False)
     class Meta:
         model = Event
-        fields = ['name', 'description', 'image' ,'slug' ,'is_active', 'start_time']
+        fields = ['name', 'description', 'image' ,'slug' ,'is_active', 'start_time', 'atendees']
         extra_kwargs = {
             'name': {'required': True},
             'description': {'required': True},
@@ -35,7 +43,7 @@ class EventSerializer(serializers.ModelSerializer):
             return instance
 
 class PlaceSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(read_only=True)
+    image = serializers.ImageField(use_url=False)
     location = serializers.StringRelatedField(read_only=True)
     type = TypeSerializer(read_only=True)
     is_active = serializers.BooleanField(read_only=True)

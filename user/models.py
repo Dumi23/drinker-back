@@ -17,6 +17,7 @@ class User(AbstractUser):
     name = models.CharField(max_length=255)
     username = models.CharField(max_length=255)
     email = models.CharField(max_length=255, unique=True)
+    image = models.ImageField(upload_to='profile_pics', null=True, blank=True)
     location = models.ForeignKey('club.Location', related_name="user_location", on_delete=models.SET_NULL, null=True)
     password = models.CharField(max_length=500, validators= [MinLengthValidator(8)])
     type = models.IntegerField(choices=TYPE_CHOICES, null=True, default=0)

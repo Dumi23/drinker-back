@@ -104,19 +104,23 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'drinkerDB',
-        'USER': 'drinker',
-        'PASSWORD': 'drinker',
+        'USER': 'postgres',
+        'PASSWORD': 'platoon',
         'HOST': 'localhost',
         'PORT': 5432,
     }
 }
 
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False
+
 CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000'
+    'http://localhost:3000', 
+    "http://localhost:64068",
 ]
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=50),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 

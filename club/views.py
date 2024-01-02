@@ -1,3 +1,4 @@
+import datetime
 from django.shortcuts import render, get_object_or_404
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -140,52 +141,52 @@ class UnauthedUserEventFeed(ListAPIView):
 
 
 class UserFeed(ListAPIView):
+    queryset = Place.objects.all()
     serializer_class = PlaceSerializer
     pagination_class = PageNumberPagination
-    def get(self, request):
-        if request.user.is_authenticated == True:
-            values = request.user.music.all().values('id')
+    def get_queryset(self):
+        if self.request.user.is_authenticated == True:
+            values = self.request.user.music.all().values('id')
             value_list = []
             for i in values:
                 value_list.append(i['id'])
             print(value_list)
-            queryset = Place.objects.filter(location=request.user.location, music__in = value_list).distinct()  
-            paginate = self.paginate_queryset(queryset)
-            serializer = PlaceSerializer(paginate, many=True)
-            return self.get_paginated_response(serializer.data)
+            queryset = Place.objects.filter(location=self.request.user.location, music__in = value_list).all().distinct()  
+            return queryset
         else:
             queryset = Place.objects.all()  
-            paginate = self.paginate_queryset(queryset)
-            serializer = PlaceSerializer(paginate, many=True)
-            return self.get_paginated_response(serializer.data)
+            return queryset
         
 class UserEventFeed(ListAPIView):
     serializer_class = PlaceSerializer
     pagination_class = PageNumberPagination
     def get(self, request):
         if request.user.is_authenticated == True:
+            following = request.data['following']  
             values = request.user.music.all().values('id')
             value_list = []
             for i in values:
                 value_list.append(i['id'])
             queryset = Place.objects.filter(location=request.user.location, music__in=value_list).distinct()
-            paginate = self.paginate_queryset(queryset=queryset)
-            serializer = PlaceSerializer(paginate, many=True)
+            event_qs = Event.objects.filter(place__in=queryset, start_time__lte=datetime.datetime.now(), start_time__gt=datetime.datetime.today() - datetime.timedelta(days=30)).distinct()
+            paginate = self.paginate_queryset(queryset=event_qs)
+            serializer = EventSerializer(paginate, many=True)
             return self.get_paginated_response(serializer.data)
         else:
-            queryset = Event.objects.all()
+            queryset = Event.objects.filter(start_time__lte=datetime.datetime.now(), start_time__gt=datetime.datetime.today() - datetime.timedelta(days=30))
             paginate = self.paginate_queryset(queryset)
             serializer = EventSerializer(paginate, many=True)
             return self.get_paginated_response(serializer.data)
 
-class GetMusic(ListAPIView):
+class GetMusic(APIView):
     queryset = Music.objects.all().order_by('-id').distinct()
     serializer_class = MusicSerializer
     pagination_class = PageNumberPagination
     filter_backends = [SearchFilter, DjangoFilterBackend]
     search_fields = ['^genre']
-    def get_queryset(self):
-        return self.queryset.distinct()
+    def get(self, request):
+        serializer = MusicSerializer(self.queryset.all(), many=True)
+        return Response(serializer.data)
 
 class GetLocations(ListAPIView):
     queryset = Location.objects.all().order_by('-id').distinct()
@@ -215,10 +216,27 @@ class RemoveAttendanceForEvent(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     def post(self, request, slug):
-        event = get_object_or_404(Event.objects.all())
+        event = get_object_or_404(Event.objects.all(), slug=slug)
         if event.atendees.filter(email=request.user.email).exists() == True:
             event.atendees.remove(request.user)
             return Response({"message": "Will not attend event anymore"}, status.HTTP_200_OK)
         return Response({"message": "You have not marked this event for attendance"}, status.HTTP_400_BAD_REQUEST)
     
+class FollowPlace(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request, slug):
+        place = get_object_or_404(Place.objects.all(), slug=slug)
+        place.followers.add(request.user)
+        return Response({"message": "Followed place"}, status=status.HTTP_200_OK)
+    
+class UnfollowPlace(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request, slug):
+        place = get_object_or_404(Place.objects.all(), slug=slug)
+        if place.followers.filter(email=request.user.email).exists() == True:
+            place.followers.remove(request.user)
+            return Response({"message": "Unfollowed place"}, status=status.HTTP_200_OK) 
+        return Response({"message": "You have not followed this place"}, status=status.HTTP_400_BAD_REQUEST)
     

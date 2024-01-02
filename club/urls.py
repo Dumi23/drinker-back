@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (GetMusic, CreatePlace, GetLocations, UserFeed, PlaceDetails, 
-    EventDetails, CreateEvent, UpdatePlace, UnauthedUserEventFeed, UnauthedUserFeed, UserEventFeed, UpdateEvent, GetTypes,
-    AttendEvent, RemoveAttendanceForEvent)
+    EventDetails, CreateEvent, UpdatePlace, UserEventFeed, UpdateEvent, GetTypes,
+    AttendEvent, RemoveAttendanceForEvent, FollowPlace, UnfollowPlace)
 
 urlpatterns = [
     path('music', GetMusic.as_view()),
@@ -16,5 +16,7 @@ urlpatterns = [
     path('types', GetTypes.as_view()),
     path('event/attend/<str:slug>', AttendEvent.as_view()),
     path('event/unattend/<str:slug>', RemoveAttendanceForEvent.as_view()),
-    path('events', UserEventFeed.as_view())
+    path('events', UserEventFeed.as_view()),
+    path('locale/follow/<str:slug>', FollowPlace.as_view()),
+    path('locale/unfollow/<str:slug>', UnfollowPlace.as_view()),
 ]

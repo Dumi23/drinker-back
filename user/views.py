@@ -5,7 +5,7 @@ from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 from rest_framework_simplejwt.backends import TokenBackend
 from .models import User
 from club.models import Location, Music
-from .serializers import UserSerializer, GoogleSocialAuthSerializer
+from .serializers import UserSerializer, GoogleSocialAuthSerializer, UpdateUserSerializer
 from django.urls import reverse
 from .utils import Util
 from rest_framework.response import Response
@@ -123,3 +123,13 @@ class Me(ListAPIView):
         response = self.get_paginated_response(paginated_serializer.data)
         response.data['user_data'] = serializer.data
         return response
+    
+class UpdateUser(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        serializer_update = UpdateUserSerializer(request.user, request.data ,partial=True)
+        if serializer_update.is_valid(raise_exception=True):
+            serializer_update.save()
+            serializer = UserSerializer(request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
