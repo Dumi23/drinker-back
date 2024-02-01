@@ -44,7 +44,7 @@ class EventSerializer(serializers.ModelSerializer):
 
 class PlaceSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=False)
-    location = serializers.StringRelatedField(read_only=True)
+    location = serializers.SlugRelatedField(slug_field='slug', queryset=Location.objects.all())
     type = TypeSerializer(read_only=True)
     is_active = serializers.BooleanField(read_only=True)
     is_validated = serializers.BooleanField(read_only=True)

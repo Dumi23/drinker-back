@@ -28,11 +28,10 @@ class CreatePlace(APIView):
         music_array.append(slug_music)
         print(music_array)
         type = get_object_or_404(Type.objects.all(), slug=request.data['type'])
-        location = get_object_or_404(Location.objects.all(), slug=request.data['location_slug'])
         image = request.data['image[]']
         serializer = PlaceSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            instance = serializer.save(owner=request.user, location=location, type=type, image=image)            
+            instance = serializer.save(owner=request.user, type=type, image=image)            
             for i in music_array:
                 try: 
                     print(i)
