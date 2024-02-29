@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'user',
     'club',
     'notifications',
+    'party',
     'django_filters',
     'phonenumber_field',
     'corsheaders',
@@ -102,12 +103,8 @@ WSGI_APPLICATION = 'drinker.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'drinkerDB',
-        'USER': 'postgres',
-        'PASSWORD': 'platoon',
-        'HOST': 'localhost',
-        'PORT': 5432,
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': "Drinker"
     }
 }
 

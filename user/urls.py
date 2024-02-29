@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import Login, Register, EmailVerify, Logout, Google, Me, UpdateUser
+from .views import Login, Register, EmailVerify, Logout, Google, Me, UpdateUser, ClearNotifications
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns= [
@@ -11,4 +11,5 @@ urlpatterns= [
     path('me', Me.as_view()),
     path('refresh', TokenRefreshView.as_view()),
     path('update', UpdateUser.as_view()),
+    path('notifications/clear', ClearNotifications.as_view()),
 ]

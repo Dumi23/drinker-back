@@ -133,3 +133,10 @@ class UpdateUser(APIView):
             serializer_update.save()
             serializer = UserSerializer(request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ClearNotifications(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        request.user.notifications.clear()
+        return Response({"message": "Cleared Notifications"}, status=status.HTTP_200_OK)
